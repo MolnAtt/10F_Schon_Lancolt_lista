@@ -64,6 +64,16 @@ namespace _10F_Schon_Lancolt_lista
 
             public bool Empty() => fejelem.jobb == fejelem;
 
+            private Elem Helye(int e)
+            {
+                Elem aktelem = fejelem.jobb; // i=0
+                while (aktelem != fejelem && aktelem.ertek != e) // i<lista.count && feltétel
+                {
+                    aktelem = aktelem.jobb; //"i++"
+                }
+                return aktelem;
+            }
+
             /// <summary>
             /// Az első előfordulást kiszedi
             /// </summary>
@@ -72,23 +82,48 @@ namespace _10F_Schon_Lancolt_lista
             {
                 if (!Empty())
                 {
-                    Elem aktelem = fejelem.jobb; // i=0
-                    while (aktelem != fejelem && aktelem.ertek != e) // i<lista.count && feltétel
-                    {
-                        aktelem = aktelem.jobb; //"i++"
-                    }
+                    Elem aktelem = Helye(e);
                     aktelem.bal.jobb = aktelem.jobb;
                     aktelem.jobb.bal = aktelem.bal;
                     count--;
                 }
             }
+
+            public bool Contains(int e) => Helye(e) != fejelem;
+
+            private Elem GetElemByIndex(int i)
+            {
+                if (i < 0)
+                {
+                    Console.WriteLine("pozitív indexet kérek!");
+                    throw new IndexOutOfRangeException();
+                }
+                if (i >= count)
+                {
+                    Console.WriteLine("túl nagy index!");
+                    throw new IndexOutOfRangeException();
+                }
+
+                Elem aktelem = fejelem.jobb;
+                for (int j = 0; j < i; j++)
+                {
+                    aktelem = aktelem.jobb;
+                }
+                return aktelem;
+            }
+
+            public int this[int i]
+            {
+                get => GetElemByIndex(i).ertek;
+                set { GetElemByIndex(i).ertek = value; } // lista[i]=... 
+            }
+
             /* TO DO LIST
-             * 
-             * lista[3]
              * RemoveAt()
+             * Insert
              * FindIndex()
-             * Contains()
              * AddRange()
+             * InsertRange
              * ToList()
              * Find()
              * FindAll()
@@ -96,8 +131,6 @@ namespace _10F_Schon_Lancolt_lista
              * FindLastIndex()
              * IndexOf
              * LastIndexOf
-             * Insert
-             * InsertRange
              * RemoveAll
              * Reverse
              * Sort
@@ -131,72 +164,69 @@ namespace _10F_Schon_Lancolt_lista
             Console.WriteLine(valtozo);
 
             lista.Remove(5);
-            Console.WriteLine(lista);
-            Console.WriteLine(lista.Count);
-
+            Console.WriteLine($"[{lista}] -> {lista.Count} db elem");
             lista.Remove(6);
-            Console.WriteLine(lista);
-            Console.WriteLine(lista.Count);
+            Console.WriteLine($"[{lista}] -> {lista.Count} db elem");
 
-            lista.Remove(7);
-            Console.WriteLine(lista);
-            Console.WriteLine(lista.Count);
+            int ez = 1;
+            Console.WriteLine($"A(z) {ez} benne van? {lista.Contains(ez)}");
 
-            lista.Remove(1);
-            Console.WriteLine(lista);
-            Console.WriteLine(lista.Count);
+            int i = -1;
+            Console.WriteLine($"A lista {i}. eleme {lista.GetByIndex(2)}");
 
-            lista.Remove(5);
-            Console.WriteLine(lista);
-            Console.WriteLine(lista.Count);
+    /*
+     lista.GetByIndex(2) ===== lista[2]
+    int x = lista.GetByIndex(2)
+    int x = lista[2]
+    lista[2] = 7
+    lista.GetByIndex(2) = 7
+     */
 
 
+    /** /
+    System.Collections.Generic.List<int> benalista = new System.Collections.Generic.List<int>();
+    benalista.Add(5);
 
+    Console.WriteLine(benalista.Count);
+    /**/
+    /** /
+    Elem f = new Elem();
+    Elem e1 = new Elem();
+    Elem e2 = new Elem();
+    Elem e3 = new Elem();
 
-            /**/
-            System.Collections.Generic.List<int> benalista = new System.Collections.Generic.List<int>();
-            benalista.Add(5);
+    f.bal = e3;
+    f.jobb = e1;
 
-            Console.WriteLine(benalista.Count);
-            /**/
-            /** /
-            Elem f = new Elem();
-            Elem e1 = new Elem();
-            Elem e2 = new Elem();
-            Elem e3 = new Elem();
+    e1.bal = f;
+    e1.ertek = 2;
+    e1.jobb = e2;
 
-            f.bal = e3;
-            f.jobb = e1;
+    e2.bal = e1;
+    e2.ertek = 3;
+    e2.jobb = e3;
 
-            e1.bal = f;
-            e1.ertek = 2;
-            e1.jobb = e2;
+    e3.bal = e2;
+    e3.ertek = 5;
+    e3.jobb = f;
 
-            e2.bal = e1;
-            e2.ertek = 3;
-            e2.jobb = e3;
+    //-----------------
 
-            e3.bal = e2;
-            e3.ertek = 5;
-            e3.jobb = f;
+    // új elemet adjunk hozzá!
+    Elem e4 = new Elem(e3, 8, f);
+    e3.jobb = e4;
+    f.bal = e4;
 
-            //-----------------
+    Elem e5 = new Elem(e4, 13); // az e4 elé szúrjuk be a 13 tartalmú dolgot!
 
-            // új elemet adjunk hozzá!
-            Elem e4 = new Elem(e3, 8, f);
-            e3.jobb = e4;
-            f.bal = e4;
+    Console.WriteLine(f.ertek);
+    Console.WriteLine(f.jobb.ertek);
+    Console.WriteLine(f.jobb.jobb.ertek);
+    Console.WriteLine(f.jobb.jobb.jobb.ertek);
+    Console.WriteLine(f.jobb.jobb.jobb.jobb.ertek);
+    Console.WriteLine(f.jobb.jobb.jobb.jobb.jobb.ertek);
 
-            Elem e5 = new Elem(e4, 13); // az e4 elé szúrjuk be a 13 tartalmú dolgot!
-
-            Console.WriteLine(f.ertek);
-            Console.WriteLine(f.jobb.ertek);
-            Console.WriteLine(f.jobb.jobb.ertek);
-            Console.WriteLine(f.jobb.jobb.jobb.ertek);
-            Console.WriteLine(f.jobb.jobb.jobb.jobb.ertek);
-            Console.WriteLine(f.jobb.jobb.jobb.jobb.jobb.ertek);
-
-            /**/
-        }
+    /**/
+}
     }
 }
