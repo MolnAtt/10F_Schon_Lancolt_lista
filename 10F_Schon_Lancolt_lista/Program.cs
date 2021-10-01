@@ -60,8 +60,54 @@ namespace _10F_Schon_Lancolt_lista
                 }
                 return str;
             }
-            
 
+
+            public bool Empty() => fejelem.jobb == fejelem;
+
+            /// <summary>
+            /// Az első előfordulást kiszedi
+            /// </summary>
+            /// <param name="ertek">az eltávolítandó elem</param>
+            public void Remove(int e)
+            {
+                if (!Empty())
+                {
+                    Elem aktelem = fejelem.jobb; // i=0
+                    while (aktelem != fejelem && aktelem.ertek != e) // i<lista.count && feltétel
+                    {
+                        aktelem = aktelem.jobb; //"i++"
+                    }
+                    aktelem.bal.jobb = aktelem.jobb;
+                    aktelem.jobb.bal = aktelem.bal;
+                    count--;
+                }
+            }
+            /* TO DO LIST
+             * 
+             * lista[3]
+             * RemoveAt()
+             * FindIndex()
+             * Contains()
+             * AddRange()
+             * ToList()
+             * Find()
+             * FindAll()
+             * FindLast()
+             * FindLastIndex()
+             * IndexOf
+             * LastIndexOf
+             * Insert
+             * InsertRange
+             * RemoveAll
+             * Reverse
+             * Sort
+             * Where
+             * Select
+             * Max
+             * Min
+             * MaxIndex
+             * MinIndex
+             */
         }
 
 
@@ -84,12 +130,34 @@ namespace _10F_Schon_Lancolt_lista
 
             Console.WriteLine(valtozo);
 
-            /** /
+            lista.Remove(5);
+            Console.WriteLine(lista);
+            Console.WriteLine(lista.Count);
+
+            lista.Remove(6);
+            Console.WriteLine(lista);
+            Console.WriteLine(lista.Count);
+
+            lista.Remove(7);
+            Console.WriteLine(lista);
+            Console.WriteLine(lista.Count);
+
+            lista.Remove(1);
+            Console.WriteLine(lista);
+            Console.WriteLine(lista.Count);
+
+            lista.Remove(5);
+            Console.WriteLine(lista);
+            Console.WriteLine(lista.Count);
+
+
+
+
+            /**/
             System.Collections.Generic.List<int> benalista = new System.Collections.Generic.List<int>();
             benalista.Add(5);
 
             Console.WriteLine(benalista.Count);
-
             /**/
             /** /
             Elem f = new Elem();
