@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -6,15 +7,14 @@ namespace _10F_Schon_Lancolt_lista
 {
     class Program
     {
-        class LancoltLista
+        class LancoltLista<T>
         {
-            private class Elem
+            private class Elem<R>
             {
-                public Elem bal;
-                public int ertek;
-                public Elem jobb;
-
-                public Elem(Elem b, int e, Elem j)
+                public Elem<R> bal;
+                public R ertek;
+                public Elem<R> jobb;
+                public Elem(Elem<R> b, R e, Elem<R> j)
                 {
                     this.bal = b;
                     this.jobb = j;
@@ -25,8 +25,7 @@ namespace _10F_Schon_Lancolt_lista
                     bal = this;
                     jobb = this;
                 }
-
-                public Elem(Elem ezele, int e)
+                public Elem(Elem<R> ezele, R e)
                 {
                     this.jobb = ezele;
                     this.bal = ezele.bal;
@@ -34,61 +33,55 @@ namespace _10F_Schon_Lancolt_lista
                     ezele.bal = this;
                     this.ertek = e;
                 }
+                public static Elem<R> operator ++(Elem<R> a) => a.jobb;
+                public static Elem<R> operator --(Elem<R> a) => a.bal;
             }
-
-            Elem fejelem = new Elem();
+            Elem<T> fejelem = new Elem<T>();
             private int count=0;
             public int Count { get { return count; } }
-
-            public void Add(int szam)
+            public void Add(T ertek)
             {
-                new Elem(fejelem, szam); // emlékezzünk: a fejelem előtt elem mindig az utolsó elem!
+                new Elem<T>(fejelem, ertek); // emlékezzünk: a fejelem előtt elem mindig az utolsó elem!
                 count++;
             }
             public void Kiir() { Console.WriteLine(this.ToString()); }
             public override string ToString()
             {
                 string str = "";
-                Elem aktelem = fejelem.jobb;
+                Elem<T> aktelem = fejelem.jobb;
                 while (aktelem != fejelem)
                 {
                     str+=$"{aktelem.ertek} ";
                     aktelem = aktelem.jobb;
                 }
-                return str;
+                return "[ "+str+"]";
             }
-
-
             public bool Empty() => fejelem.jobb == fejelem;
-
-            private Elem Helye(int e)
+            private Elem<T> Helye(T e)
             {
-                Elem aktelem = fejelem.jobb; // i=0
-                while (aktelem != fejelem && aktelem.ertek != e) // i<lista.count && feltétel
+                Elem<T> aktelem = fejelem.jobb; // i=0
+                while (aktelem != fejelem && !aktelem.ertek.Equals(e)) // i<lista.count && feltétel
                 {
-                    aktelem = aktelem.jobb; //"i++"
+                    aktelem++; //"i++"
                 }
                 return aktelem;
             }
-
             /// <summary>
             /// Az első előfordulást kiszedi
             /// </summary>
             /// <param name="ertek">az eltávolítandó elem</param>
-            public void Remove(int e)
+            public void Remove(T e)
             {
                 if (!Empty())
                 {
-                    Elem aktelem = Helye(e);
+                    Elem<T> aktelem = Helye(e);
                     aktelem.bal.jobb = aktelem.jobb;
                     aktelem.jobb.bal = aktelem.bal;
                     count--;
                 }
             }
-
-            public bool Contains(int e) => Helye(e) != fejelem;
-
-            private Elem GetElemByIndex(int i)
+            public bool Contains(T e) => Helye(e) != fejelem;
+            private Elem<T> GetElemByIndex(int i)
             {
                 if (i < 0)
                 {
@@ -101,24 +94,33 @@ namespace _10F_Schon_Lancolt_lista
                     throw new IndexOutOfRangeException();
                 }
 
-                Elem aktelem = fejelem.jobb;
+                Elem<T> aktelem = fejelem.jobb;
                 for (int j = 0; j < i; j++)
                 {
                     aktelem = aktelem.jobb;
                 }
                 return aktelem;
             }
-
-            public int this[int i]
+            public T this[int i]
             {
                 get => GetElemByIndex(i).ertek;
                 set { GetElemByIndex(i).ertek = value; } // lista[i]=... 
             }
 
-            public int Min()// üres/egyelemű listára mit ad?
+            //ti munkáitok:
+            /* ez nem fog működni, mert nem tudjuk, hogy T-nek egyáltalán van-e > vagy < operátora! 
+             * * /
+            public int Min() // 
             {
-                Elem aktelem = fejelem.jobb.jobb;
-                int min = fejelem.jobb.ertek;
+                if (Empty())
+                {
+                    Console.WriteLine("Üres listában azért nem kéne optimumot keresni!");
+                    throw new Exception();
+                }
+
+                T min = fejelem.jobb.ertek;
+
+                Elem<T> aktelem = fejelem.jobb.jobb;
                 while (aktelem != fejelem)
                 {
                     if (aktelem.ertek < min)
@@ -129,10 +131,42 @@ namespace _10F_Schon_Lancolt_lista
                 }
                 return min;
             }
+            public int Min(Func<int, int> selector)
+            {
+                if (Empty())
+                {
+                    Console.WriteLine("Üres listában azért nem kéne optimumot keresni!");
+                    throw new Exception();
+                }
+
+                int selected_min = selector(fejelem.jobb.ertek);
+                int min = fejelem.jobb.ertek;
+
+
+
+                Elem aktelem = fejelem.jobb.jobb;
+                while (aktelem != fejelem)
+                {
+                    int sertek = selector(aktelem.ertek);
+                    if (sertek < selected_min)
+                    {
+                        selected_min = sertek;
+                        min = aktelem.ertek;
+                    }
+                    aktelem = aktelem.jobb;
+                }
+                return min;
+            }
+
             public int Max()
             {
-                Elem aktelem = fejelem.jobb.jobb;
+                if (Empty())
+                {
+                    Console.WriteLine("Üres listában azért nem kéne optimumot keresni!");
+                    throw new Exception();
+                }
                 int max = fejelem.jobb.ertek;
+                Elem aktelem = fejelem.jobb.jobb;
                 while (aktelem != fejelem)
                 {
                     if (aktelem.ertek > max)
@@ -141,13 +175,15 @@ namespace _10F_Schon_Lancolt_lista
                     }
                     aktelem = aktelem.jobb;
                 }
-
                 return max;
             }
-            public System.Collections.Generic.List<int> ToList()
+
+            /**/
+            public System.Collections.Generic.List<T> ToList()
             {
-                System.Collections.Generic.List<int> lista = new System.Collections.Generic.List<int>(this.Count);
-                Elem aktelem = fejelem.jobb;
+                System.Collections.Generic.List<T> lista = new System.Collections.Generic.List<T>(this.Count);
+                Elem<T> aktelem = fejelem.jobb;
+                lista.Max();
 
                 while (aktelem != fejelem)
                 {
@@ -159,34 +195,34 @@ namespace _10F_Schon_Lancolt_lista
             }
             public int IndexOf(int e) // ciklus optimalizálható logikával
             {
-                int result = 0;
-                Elem aktelem = fejelem.jobb;
-                while (aktelem != fejelem && aktelem.ertek != e)
+                int i = 0;
+                Elem<T> aktelem = fejelem.jobb;
+                while (!(aktelem == fejelem || aktelem.ertek.Equals(e)))
                 {
                     aktelem = aktelem.jobb;
-                    result++;
+                    i++;
                 }
 
-                return result == count ? -1 : result;
+                return i == count ? -1 : i;
             }
-
-            public int Find(Func<int, bool> predicate)
+            public T Find(Func<T, bool> predicate)
             {
-                Elem aktelem = fejelem.jobb;
+                Elem<T> aktelem = fejelem.jobb;
                 while (aktelem != fejelem)
                 {
                     if (predicate(aktelem.ertek))
                         return aktelem.ertek;
                     aktelem = aktelem.jobb;
                 }
+
+
                 Console.WriteLine("Nincsen a megadott tulajdonsággal rendelkező elem a listában.");
                 throw new Exception();
             }
-
-            public LancoltLista Where(Func<int, bool> predicate)
+            public LancoltLista<T> Where(Func<T, bool> predicate)
             {
-                LancoltLista lista = new LancoltLista();
-                Elem aktelem = fejelem.jobb;
+                LancoltLista<T> lista = new LancoltLista<T>();
+                Elem<T> aktelem = fejelem.jobb;
                 while (aktelem != fejelem)
                 {
                     if (predicate(aktelem.ertek))
@@ -197,6 +233,7 @@ namespace _10F_Schon_Lancolt_lista
                 }
                 return lista;
             }
+            /** /
             public int MaxIndex()
             {
                 Elem aktelem = fejelem.jobb.jobb;
@@ -219,29 +256,23 @@ namespace _10F_Schon_Lancolt_lista
 
                 return maxix;
             }
-
-            public int FindIndex(Func<int, bool> predicate)
+            /**/
+            public int FindIndex(Func<T, bool> predicate)
             {
-                Elem aktelem = fejelem.jobb;
-                int ertek;
+                Elem<T> aktelem = fejelem.jobb;
                 int i = 0;
                 while (aktelem != fejelem)
                 {
                     if (predicate(fejelem.ertek))
-                    {
-                        ertek = aktelem.ertek;
                         return i;
-                    }
                     aktelem = aktelem.jobb;
                     i++;
                 }
                 return -1;
             }
-
             /* TO DO LIST
              * 1. RemoveAt()
              * 2. Insert
-             * 3. FindIndex()
              * 4. AddRange()
              * 5. InsertRange
              * 8. FindAll()
@@ -254,7 +285,6 @@ namespace _10F_Schon_Lancolt_lista
              * 15. Where
              * 16. Select
              * 17. Max
-             * Min, Max (overload szelektorral)
              * Min, Max (overload predikátummal)
              * Min, Max (overload relációval)
              * 
@@ -267,52 +297,24 @@ namespace _10F_Schon_Lancolt_lista
         static void Main(string[] args)
         {
             
-            LancoltLista lista = new LancoltLista();
+            LancoltLista<int> lista = new LancoltLista<int>();
 
             lista.Add(5);
             lista.Add(6);
             lista.Add(7);
             lista.Add(1);
+            Console.WriteLine(lista);
 
-            lista.Kiir();
+            lista.Remove(-1);
+            Console.WriteLine(lista);
 
-            Console.WriteLine("[ "+lista+"]");
 
-            // lista.Count = 100;
-            int valtozo = lista.Count;
-
-            Console.WriteLine(valtozo);
-
-            lista.Remove(5);
-            Console.WriteLine($"[{lista}] -> {lista.Count} db elem");
-            lista.Remove(6);
-            Console.WriteLine($"[{lista}] -> {lista.Count} db elem");
-
-            int ez = 1;
-            Console.WriteLine($"A(z) {ez} benne van? {lista.Contains(ez)}");
-
-            int i = 0;
-            Console.WriteLine($"A lista {i}. eleme {lista[i]}");
-            lista[i] = 13;
-            Console.WriteLine($"A lista {i}. eleme {lista[i]}");
-
-            
-
-            /*
-             lista.GetByIndex(2) ===== lista[2]
-            int x = lista.GetByIndex(2)
-            int x = lista[2]
-            lista[2] = 7
-            lista.GetByIndex(2) = 7
-             */
 
 
             /**/
             System.Collections.Generic.List<int> benalista = new System.Collections.Generic.List<int>();
             benalista.Add(5);
 
-            Console.WriteLine(benalista.Count);
-            benalista.find
             /**/
             /** /
             Elem f = new Elem();
@@ -352,6 +354,8 @@ namespace _10F_Schon_Lancolt_lista
             Console.WriteLine(f.jobb.jobb.jobb.jobb.jobb.ertek);
 
             /**/
+
+            Console.ReadKey();
         }
     }
 }
